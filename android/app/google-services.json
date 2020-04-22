@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1037925302083",
+    "firebase_url": "https://prototipo1-precadastro.firebaseio.com",
+    "project_id": "prototipo1-precadastro",
+    "storage_bucket": "prototipo1-precadastro.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1037925302083:android:0d965ec4c3241d818bb9f6",
+        "android_client_info": {
+          "package_name": "br.com.consulticart.prototipo1precadastro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1037925302083-ifo2cr1789fso9763j5n9j1e4osu8824.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfz0wER9GLOTTr4nr7-YYYljybnerN4_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1037925302083-ifo2cr1789fso9763j5n9j1e4osu8824.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

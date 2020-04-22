@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1037925302083-dc2hpul2sbmc0ijtafubv8ea54fd896i.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1037925302083-dc2hpul2sbmc0ijtafubv8ea54fd896i</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC1thQdSX0R1eiqEnXpZnp-KLvtKxoayU0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1037925302083</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>br.com.consulticart.prototipo1precadastro</string>
+	<key>PROJECT_ID</key>
+	<string>prototipo1-precadastro</string>
+	<key>STORAGE_BUCKET</key>
+	<string>prototipo1-precadastro.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1037925302083:ios:0049bb3e8cb4ba588bb9f6</string>
+	<key>DATABASE_URL</key>
+	<string>https://prototipo1-precadastro.firebaseio.com</string>
+</dict>
+</plist>
