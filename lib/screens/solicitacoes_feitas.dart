@@ -21,6 +21,7 @@ class SolicitacoesFeitas extends StatelessWidget {
               stream: _refPedidos
                   .where('idUsuario',
                       isEqualTo: configuracao.getIdUsuarioAtual())
+                  .orderBy('dataSolicitacao', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -36,7 +37,7 @@ class SolicitacoesFeitas extends StatelessWidget {
 
                   cards.add(CardSolicitacoesFeitas(
                     texto: tipoCertidao,
-                    dataSolicitacao: dataSolicitacao.toDate(),
+                    dataSolicitacao: dataSolicitacao?.toDate(),
                   ));
                 }
 

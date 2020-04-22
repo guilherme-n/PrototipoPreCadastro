@@ -12,11 +12,12 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as Im;
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 const String _kTextoTituloDialog =
     'Escolha de onde gostaria de enviar o documento';
-const String _kTextoImgDaCamera = 'Através da camera';
-const String _kTextoImgDaGaleria = 'Documento da galeria de imagens';
+const String _kTextoImgDaCamera = 'Câmera';
+const String _kTextoImgDaGaleria = 'Galeria de imagens';
 
 class CriacaoSolicitacao extends StatefulWidget {
   static const String id = 'criacao_solicitacao';
@@ -28,6 +29,8 @@ class CriacaoSolicitacao extends StatefulWidget {
 class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
   Firestore _firestore = Firestore.instance;
   FirebaseUser _firebaseUser;
+  Pedido pedido = Pedido();
+  final _globalKeyForm = GlobalKey<FormState>();
 
   final StorageReference storageRef = FirebaseStorage.instance.ref();
   final pedidosRef = Firestore.instance.collection('pedidos');
@@ -35,14 +38,9 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
   bool _isCarregando = false;
   File file;
   String idDocumento = Uuid().v4();
-  final TextEditingController _textEditingControllerNome =
-      new TextEditingController();
-  final TextEditingController _textEditingControllerCelular =
-      new TextEditingController();
-  final TextEditingController _textEditingControllerEmail =
-      new TextEditingController();
-  final TextEditingController _textEditingControllerTipopedido =
-      new TextEditingController();
+
+  final mascaraCelular = new MaskTextInputFormatter(
+      mask: '(##) #####-####', filter: {"#": RegExp(r'[0-9]')});
 
   @override
   void initState() {
@@ -60,105 +58,161 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
         padding: const EdgeInsets.all(16.0),
         child: ModalProgressHUD(
           inAsyncCall: _isCarregando,
-          child: Column(
-            children: <Widget>[
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Nome',
-                ),
-                controller: _textEditingControllerNome,
-              ),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Celular',
-                ),
-                controller: _textEditingControllerCelular,
-              ),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                ),
-                controller: _textEditingControllerEmail,
-              ),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Tipo do pedido',
-                ),
-                controller: _textEditingControllerTipopedido,
-              ),
-              Container(
-                height: 50.0,
-                width: MediaQuery.of(context).size.width / 2,
-                color: Theme.of(context).primaryColor,
-                child: ListTile(
-                  onTap: () {
-                    if (file == null) {
-                      Platform.isIOS
-                          ? selectImageiOS(context)
-                          : selectImageAndroid(context);
-                    }
-                  },
-                  leading: const Icon(Icons.attach_file),
-                  title: const Text('RG'),
-                  trailing: Visibility(
-                    visible: file != null,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          file = null;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-//                  child: Row(
-//                    mainAxisAlignment: MainAxisAlignment.center,
-//                    children: <Widget>[
-//                      Icon(Icons.attach_file),
-//                      Text('RG'),
-//                    ],
-//                  ),
-              ),
-              FlatButton(
-                  child: const Text(
-                    'Enviar',
-                  ),
-                  onPressed: _enviarSolicitacao),
-            ],
-          ),
+          child: formNovo(),
         ),
       ),
     );
   }
 
-  void _enviarSolicitacao() async {
+  Form formNovo() {
+    return Form(
+      key: _globalKeyForm,
+      child: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Nome'),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Preencha o nome';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                this.pedido.solicitante.nome = value;
+              },
+            ),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Celular'),
+              keyboardType: TextInputType.number,
+              inputFormatters: [mascaraCelular],
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Preencha o celular';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                this.pedido.solicitante.celular = value;
+              },
+            ),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Preencha o email';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                this.pedido.solicitante.email = value;
+              },
+            ),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Tipo do pedido'),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Preencha o tipo do pedido';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                this.pedido.tipoPedido = value;
+              },
+            ),
+            SizedBox(
+              height: 20.0,
+            ),
+            BotaoEImagem(textoBotao: 'RG', posicaoArrayImagens: 0),
+            SizedBox(height: 20.0),
+            BotaoEImagem(textoBotao: 'CPF', posicaoArrayImagens: 1),
+            SizedBox(height: 20.0),
+            RaisedButton(
+              color: Colors.green,
+              child: const Text(
+                'Enviar',
+              ),
+              onPressed: _submit,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Row BotaoEImagem(
+      {@required String textoBotao, @required int posicaoArrayImagens}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        Expanded(
+          child: Container(
+            color: MediaQuery.of(context).platformBrightness == Brightness.light
+                ? Theme.of(context).primaryColorDark
+                : Theme.of(context).primaryColorLight,
+            child: ListTile(
+              leading: Icon(Icons.attach_file),
+              title: Text(textoBotao),
+              onTap: () {
+                if (file == null) {
+                  Platform.isIOS
+                      ? selectImageiOS(context)
+                      : selectImageAndroid(context);
+                }
+              },
+              trailing: Visibility(
+                visible: file != null,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      file = null;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 20.0,
+        ),
+        Container(
+          width: 100.0,
+          height: 100.0,
+          decoration: BoxDecoration(
+            border: Border.all(),
+            image: file == null
+                ? null
+                : DecorationImage(
+                    image: FileImage(file),
+                    fit: BoxFit.fill,
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _submit() async {
     setState(() {
       _isCarregando = true;
     });
 
+    if (!_globalKeyForm.currentState.validate()) {
+      return;
+    }
+
+    pedido.solicitante = Solicitante();
+    _globalKeyForm.currentState.save();
+    pedido.dataSolicitacao = DateTime.now();
+    pedido.idUsuario = _firebaseUser.uid;
+
     try {
-      String nome = _textEditingControllerNome.text;
-      String celular = _textEditingControllerCelular.text;
-      String email = _textEditingControllerEmail.text;
-      String tipoPedido = _textEditingControllerTipopedido.text;
-
-      Solicitante solicitante = Solicitante(
-        nome: nome,
-        celular: celular,
-        email: email,
-      );
-
-      Pedido pedido = Pedido(
-        dataSolicitacao: DateTime.now(),
-        solicitante: solicitante,
-        tipoPedido: tipoPedido,
-        idUsuario: _firebaseUser.uid,
-      );
-
       DocumentReference resultado =
           await _firestore.collection('pedidos').add(pedido.toJson());
 
@@ -175,10 +229,10 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
         idDocumento = Uuid().v4();
       });
 
-      if (resultado != null) {
+      if (true) {
         await alertDialog(
           context: context,
-          titulo: "Criado com sucesso",
+          titulo: "Enviado com sucesso.",
           conteudo:
               "Agora é só aguardar. Em poucas horas seu pedido será analisado.",
         );
@@ -186,10 +240,33 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      print(e);
-    } finally {
-      _isCarregando = false;
+      Scaffold.of(context).showSnackBar(
+        SnackBar(content: Text(e)),
+      );
     }
+    setState(() {
+      _isCarregando = false;
+    });
+  }
+
+  handleTakePhoto() async {
+    Navigator.pop(context);
+    File file = await ImagePicker.pickImage(
+      source: ImageSource.camera,
+      maxHeight: 675,
+      maxWidth: 960,
+    );
+    setState(() {
+      this.file = file;
+    });
+  }
+
+  handleChooseFromGallery() async {
+    Navigator.pop(context);
+    File file = await ImagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      this.file = file;
+    });
   }
 
   selectImageAndroid(parentContext) {
@@ -219,8 +296,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
       context: context,
       builder: (context) {
         return CupertinoActionSheet(
-          title: Text('Seleção de documento'),
-          message: Text(_kTextoTituloDialog),
+          title: Text(_kTextoTituloDialog),
           cancelButton: CupertinoActionSheetAction(
             child: Text('Cancelar'),
             onPressed: () {
@@ -244,26 +320,6 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
         );
       },
     );
-  }
-
-  handleTakePhoto() async {
-    Navigator.pop(context);
-    File file = await ImagePicker.pickImage(
-      source: ImageSource.camera,
-      maxHeight: 675,
-      maxWidth: 960,
-    );
-    setState(() {
-      this.file = file;
-    });
-  }
-
-  handleChooseFromGallery() async {
-    Navigator.pop(context);
-    File file = await ImagePicker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      this.file = file;
-    });
   }
 
   Future<String> uploadImage(imageFile) async {

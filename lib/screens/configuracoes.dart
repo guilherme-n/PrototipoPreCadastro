@@ -7,16 +7,15 @@ class Configuracoes extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: header(isAppTitle: false, texto: 'Configuracoes'),
-      body: Column(
-        children: <Widget>[
-          FlatButton(
-            child: Text('Sair'),
-            onPressed: () async{
-              AuthService auth = AuthService();
-              auth.signout();
-            },
-          ),
-        ],
+      body: Center(
+        child: FlatButton(
+          color: Colors.yellow,
+          child: Text('Sair'),
+          onPressed: () async{
+            AuthService auth = AuthService();
+            auth.signout();
+          },
+        ),
       ),
     );
   }

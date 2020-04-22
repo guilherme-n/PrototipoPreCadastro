@@ -8,8 +8,10 @@ Future alertDialog(
     @required String conteudo}) {
   if (Platform.isIOS) {
     return showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) => CupertinoAlertDialog(
+
         title: Text(titulo),
         content: Text(conteudo),
         actions: <Widget>[
@@ -24,6 +26,7 @@ Future alertDialog(
     );
   } else {
     return showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) => AlertDialog(
         title: Text(titulo),

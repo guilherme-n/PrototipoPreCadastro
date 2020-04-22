@@ -1,7 +1,7 @@
 class Solicitante {
-  final String nome;
-  final String email;
-  final String celular;
+  String nome;
+  String email;
+  String celular;
 
   Solicitante({this.nome, this.email, this.celular});
 

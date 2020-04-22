@@ -6,7 +6,6 @@ import 'package:prototipo1precadastro/components/header.dart';
 import 'criacao_solicitacao.dart';
 
 class TiposSolicitacao extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,37 +28,44 @@ class TiposSolicitacao extends StatelessWidget {
               BotaoSolicitarServico(
                 icone: Icons.announcement,
                 texto: 'Solicitar escritura',
-                onClick: () async{
-
-                  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
+                onClick: () async {
+                  FlutterLocalNotificationsPlugin
+                      flutterLocalNotificationsPlugin =
+                      FlutterLocalNotificationsPlugin();
                   var initializationSettingsAndroid =
-                  AndroidInitializationSettings('app_icon');
+                      AndroidInitializationSettings('app_icon');
                   var initializationSettingsIOS = IOSInitializationSettings(
                     requestSoundPermission: false,
                     requestBadgePermission: false,
                     requestAlertPermission: false,
-                    onDidReceiveLocalNotification: onDidReceiveLocalNotification,
+                    onDidReceiveLocalNotification:
+                        onDidReceiveLocalNotification,
                   );
                   var initializationSettings = InitializationSettings(
                       initializationSettingsAndroid, initializationSettingsIOS);
-                  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-                      onSelectNotification: (_){});
+                  await flutterLocalNotificationsPlugin.initialize(
+                      initializationSettings,
+                      onSelectNotification: (_) {});
 
                   await flutterLocalNotificationsPlugin
                       .resolvePlatformSpecificImplementation<
-                      IOSFlutterLocalNotificationsPlugin>()
+                          IOSFlutterLocalNotificationsPlugin>()
                       ?.requestPermissions(
-                    alert: true,
-                    badge: true,
-                    sound: true,
-                  );
+                        alert: true,
+                        badge: true,
+                        sound: true,
+                      );
 
-                  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-                      'your channel id', 'your channel name', 'your channel description',
-                      importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+                  var androidPlatformChannelSpecifics =
+                      AndroidNotificationDetails('your channel id',
+                          'your channel name', 'your channel description',
+                          importance: Importance.Max,
+                          priority: Priority.High,
+                          ticker: 'ticker');
                   var iOSPlatformChannelSpecifics = IOSNotificationDetails();
                   var platformChannelSpecifics = NotificationDetails(
-                      androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+                      androidPlatformChannelSpecifics,
+                      iOSPlatformChannelSpecifics);
                   await flutterLocalNotificationsPlugin.show(
                       0, 'plain title', 'plain body', platformChannelSpecifics,
                       payload: 'item x');

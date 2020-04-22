@@ -4,7 +4,6 @@ import 'package:prototipo1precadastro/Util/configuracoes_globais.dart';
 import 'package:prototipo1precadastro/screens/cadastro_usuario.dart';
 import 'package:prototipo1precadastro/screens/criacao_solicitacao.dart';
 import 'package:prototipo1precadastro/screens/home.dart';
-import 'package:prototipo1precadastro/screens/home.dart';
 import 'package:prototipo1precadastro/screens/login.dart';
 import 'package:prototipo1precadastro/screens/resetar_senha.dart';
 import 'package:provider/provider.dart';
