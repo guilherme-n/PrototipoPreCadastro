@@ -59,6 +59,7 @@ class _LoginState extends State<Login> {
               ),
               Builder(
                 builder: (parentContext) => FlatButton(
+                  color: Theme.of(context).primaryColor,
                   child: Text('Entrar'),
                   onPressed: () async {
                     var email = _textEditingControllerEmail.text;
@@ -119,12 +120,14 @@ class _LoginState extends State<Login> {
                 ),
               ),
               FlatButton(
+                color: Theme.of(context).primaryColor,
                 child: Text('Não tem conta? Crie agora.'),
                 onPressed: () {
                   Navigator.pushNamed(context, CadastroUsuario.id);
                 },
               ),
               FlatButton(
+                color: Theme.of(context).primaryColor,
                 child: Text('Esqueceu a senha?'),
                 onPressed: () {
                   Navigator.pushNamed(context, ResetarSenha.id);

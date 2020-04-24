@@ -6,7 +6,7 @@ class ResetarSenha extends StatelessWidget {
   static const String id = 'resetar_senha';
   final AuthService _authService = AuthService();
 
-  TextEditingController _textEditingControllerEmail = TextEditingController();
+  final TextEditingController _textEditingControllerEmail = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(

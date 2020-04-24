@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:prototipo1precadastro/components/alert_dialog.dart';
 import 'package:prototipo1precadastro/components/header.dart';
 import 'package:prototipo1precadastro/models/pedido.dart';
@@ -27,19 +28,18 @@ class CriacaoSolicitacao extends StatefulWidget {
 }
 
 class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
-  Firestore _firestore = Firestore.instance;
   FirebaseUser _firebaseUser;
-  Pedido pedido = Pedido();
+  Pedido _pedido = Pedido();
   final _globalKeyForm = GlobalKey<FormState>();
 
-  final StorageReference storageRef = FirebaseStorage.instance.ref();
-  final pedidosRef = Firestore.instance.collection('pedidos');
+  final StorageReference _storageRef = FirebaseStorage.instance.ref();
+  final CollectionReference _pedidosRef =
+      Firestore.instance.collection('pedidos');
 
   bool _isCarregando = false;
-  File file;
-  String idDocumento = Uuid().v4();
+  final List<File> _imagens = [null, null];
 
-  final mascaraCelular = new MaskTextInputFormatter(
+  final _mascaraCelular = new MaskTextInputFormatter(
       mask: '(##) #####-####', filter: {"#": RegExp(r'[0-9]')});
 
   @override
@@ -79,13 +79,13 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
                 return null;
               },
               onSaved: (value) {
-                this.pedido.solicitante.nome = value;
+                this._pedido.solicitante.nome = value;
               },
             ),
             TextFormField(
               decoration: InputDecoration(labelText: 'Celular'),
               keyboardType: TextInputType.number,
-              inputFormatters: [mascaraCelular],
+              inputFormatters: [_mascaraCelular],
               validator: (value) {
                 if (value.isEmpty) {
                   return 'Preencha o celular';
@@ -93,7 +93,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
                 return null;
               },
               onSaved: (value) {
-                this.pedido.solicitante.celular = value;
+                this._pedido.solicitante.celular = value;
               },
             ),
             TextFormField(
@@ -106,7 +106,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
                 return null;
               },
               onSaved: (value) {
-                this.pedido.solicitante.email = value;
+                this._pedido.solicitante.email = value;
               },
             ),
             TextFormField(
@@ -118,15 +118,15 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
                 return null;
               },
               onSaved: (value) {
-                this.pedido.tipoPedido = value;
+                this._pedido.tipoPedido = value;
               },
             ),
             SizedBox(
               height: 20.0,
             ),
-            BotaoEImagem(textoBotao: 'RG', posicaoArrayImagens: 0),
+            botaoEImagem(textoBotao: 'RG', posicaoArrayImagens: 0),
             SizedBox(height: 20.0),
-            BotaoEImagem(textoBotao: 'CPF', posicaoArrayImagens: 1),
+            botaoEImagem(textoBotao: 'CPF', posicaoArrayImagens: 1),
             SizedBox(height: 20.0),
             RaisedButton(
               color: Colors.green,
@@ -141,7 +141,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
     );
   }
 
-  Row BotaoEImagem(
+  Row botaoEImagem(
       {@required String textoBotao, @required int posicaoArrayImagens}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -155,14 +155,15 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
               leading: Icon(Icons.attach_file),
               title: Text(textoBotao),
               onTap: () {
-                if (file == null) {
+                if (_imagens[posicaoArrayImagens] == null) {
+                  FocusScope.of(context).unfocus();
                   Platform.isIOS
-                      ? selectImageiOS(context)
-                      : selectImageAndroid(context);
+                      ? selectImageiOS(context, posicaoArrayImagens)
+                      : selectImageAndroid(context, posicaoArrayImagens);
                 }
               },
               trailing: Visibility(
-                visible: file != null,
+                visible: _imagens[posicaoArrayImagens] != null,
                 child: IconButton(
                   icon: Icon(
                     Icons.delete,
@@ -170,7 +171,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
                   ),
                   onPressed: () {
                     setState(() {
-                      file = null;
+                      _imagens[posicaoArrayImagens] = null;
                     });
                   },
                 ),
@@ -186,10 +187,10 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
           height: 100.0,
           decoration: BoxDecoration(
             border: Border.all(),
-            image: file == null
+            image: _imagens[posicaoArrayImagens] == null
                 ? null
                 : DecorationImage(
-                    image: FileImage(file),
+                    image: FileImage(_imagens[posicaoArrayImagens]),
                     fit: BoxFit.fill,
                   ),
           ),
@@ -199,35 +200,39 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
   }
 
   void _submit() async {
-    setState(() {
-      _isCarregando = true;
-    });
-
     if (!_globalKeyForm.currentState.validate()) {
       return;
     }
 
-    pedido.solicitante = Solicitante();
+    setState(() {
+      _isCarregando = true;
+    });
+
+    _pedido.solicitante = Solicitante();
     _globalKeyForm.currentState.save();
-    pedido.dataSolicitacao = DateTime.now();
-    pedido.idUsuario = _firebaseUser.uid;
+    _pedido.dataSolicitacao = DateTime.now();
+    _pedido.idUsuario = _firebaseUser.uid;
 
     try {
-      DocumentReference resultado =
-          await _firestore.collection('pedidos').add(pedido.toJson());
+      DocumentReference resultado = await _pedidosRef.add(_pedido.toJson());
 
-      if (file != null) {
-        String mediaUrl = await uploadImage(file);
+      for (File imagem in _imagens) {
+        if (imagem != null) {
+          String id = Uuid().v4();
+          File imagemComprimida = await compressImage(imagem, id);
+          String urlArquivo = await uploadImage(imagemComprimida, id);
 
-        await Firestore.instance
-            .collection('pedidos/${resultado.documentID}/documentos')
-            .add({'mediaUrl': mediaUrl});
+          await Firestore.instance
+              .collection('pedidos/${resultado.documentID}/documentos')
+              .add({
+            'nomeArquivo': '$id.jgp',
+            'urlArquivo': urlArquivo,
+            'dataCriacao': DateTime.now(),
+          });
+
+          imagem = null;
+        }
       }
-
-      setState(() {
-        file = null;
-        idDocumento = Uuid().v4();
-      });
 
       if (true) {
         await alertDialog(
@@ -249,7 +254,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
     });
   }
 
-  handleTakePhoto() async {
+  handleTakePhoto(int posicaoArrayImagens) async {
     Navigator.pop(context);
     File file = await ImagePicker.pickImage(
       source: ImageSource.camera,
@@ -257,19 +262,19 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
       maxWidth: 960,
     );
     setState(() {
-      this.file = file;
+      _imagens[posicaoArrayImagens] = file;
     });
   }
 
-  handleChooseFromGallery() async {
+  handleChooseFromGallery(posicaoArrayImagens) async {
     Navigator.pop(context);
     File file = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
-      this.file = file;
+      _imagens[posicaoArrayImagens] = file;
     });
   }
 
-  selectImageAndroid(parentContext) {
+  selectImageAndroid(BuildContext parentContext, int posicaoArrayImagens) {
     return showDialog(
       context: parentContext,
       builder: (context) {
@@ -277,88 +282,77 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
           title: Text(_kTextoTituloDialog),
           children: <Widget>[
             SimpleDialogOption(
-                child: Text(_kTextoImgDaCamera), onPressed: handleTakePhoto),
+              child: Text(_kTextoImgDaCamera),
+              onPressed: handleTakePhoto(posicaoArrayImagens),
+            ),
             SimpleDialogOption(
-                child: Text(_kTextoImgDaGaleria),
-                onPressed: handleChooseFromGallery),
+              child: Text(_kTextoImgDaGaleria),
+              onPressed: handleChooseFromGallery(posicaoArrayImagens),
+            ),
             SimpleDialogOption(
               child: Text("Cancelar"),
               onPressed: () => Navigator.pop(context),
-            )
+            ),
           ],
         );
       },
     );
   }
 
-  selectImageiOS(BuildContext context) {
+  selectImageiOS(BuildContext context, int posicaoArrayImagens) {
     showCupertinoModalPopup(
       context: context,
       builder: (context) {
         return CupertinoActionSheet(
           title: Text(_kTextoTituloDialog),
+          actions: <Widget>[
+            CupertinoActionSheetAction(
+              child: Text(
+                _kTextoImgDaCamera,
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              onPressed: () {
+                handleTakePhoto(posicaoArrayImagens);
+              },
+            ),
+            CupertinoActionSheetAction(
+              child: Text(
+                _kTextoImgDaGaleria,
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              onPressed: () {
+                handleChooseFromGallery(posicaoArrayImagens);
+              },
+            ),
+          ],
           cancelButton: CupertinoActionSheetAction(
-            child: Text('Cancelar'),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
-          actions: <Widget>[
-            CupertinoActionSheetAction(
-              child: Text(_kTextoImgDaCamera),
-              onPressed: () {
-                handleTakePhoto();
-              },
-            ),
-            CupertinoActionSheetAction(
-              child: Text(_kTextoImgDaGaleria),
-              onPressed: () {
-                handleChooseFromGallery();
-              },
-            ),
-          ],
         );
       },
     );
   }
 
-  Future<String> uploadImage(imageFile) async {
+  Future<String> uploadImage(File imageFile, String id) async {
     StorageUploadTask uploadTask =
-        storageRef.child("$idDocumento.jpg").putFile(imageFile);
+        _storageRef.child('$id.jpg').putFile(imageFile);
     StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
-    String downloadUrl = await storageSnap.ref.getDownloadURL();
-    return downloadUrl;
+    return await storageSnap.ref.getDownloadURL();
   }
 
-//  handleSubmit() async {
-////    setState(() {
-//////      isUploading = true;
-////    });
-////    await compressImage();
-//    String mediaUrl = await uploadImage(file);
-////    createPostInFirestore(
-////      mediaUrl: mediaUrl,
-//////      location: locationController.text,
-//////      description: captionController.text,
-////    );
-////    captionController.clear();
-////    locationController.clear();
-//    setState(() {
-//      file = null;
-////      isUploading = false;
-//      idDocumento = Uuid().v4();
-//    });
-//  }
+  Future<File> compressImage(File arquivo, String id) async {
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    Im.Image imageFile = Im.decodeImage(arquivo.readAsBytesSync());
+    final compressedImageFile = File('$path/img_$id.jpg')
+      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
 
-//  compressImage() async {
-//    final tempDir = await getTemporaryDirectory();
-//    final path = tempDir.path;
-//    Im.Image imageFile = Im.decodeImage(file.readAsBytesSync());
-//    final compressedImageFile = File('$path/img_$postId.jpg')
-//      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
-//    setState(() {
-//      file = compressedImageFile;
-//    });
-//  }
-
+    return compressedImageFile;
+  }
 }

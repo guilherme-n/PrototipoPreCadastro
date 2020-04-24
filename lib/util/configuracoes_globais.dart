@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:prototipo1precadastro/services/auth_service.dart';
 
 class ConfiguracoesGlobais extends ChangeNotifier{
   String _idUsuarioAtual;

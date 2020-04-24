@@ -2,16 +2,16 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-Future alertDialog(
-    {@required BuildContext context,
-    @required String titulo,
-    @required String conteudo}) {
+Future alertDialog({
+  @required BuildContext context,
+  @required String titulo,
+  @required String conteudo,
+}) {
   if (Platform.isIOS) {
     return showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) => CupertinoAlertDialog(
-
         title: Text(titulo),
         content: Text(conteudo),
         actions: <Widget>[

@@ -1,15 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:prototipo1precadastro/screens/tipos_solicitacao.dart';
 import 'package:prototipo1precadastro/screens/home.dart';
 
 class CadastroUsuario extends StatelessWidget {
   static const String id = 'cadastro_usuario';
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  TextEditingController textEditingControllerEmail =
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController textEditingControllerEmail =
       new TextEditingController();
-  TextEditingController textEditingControllerSenha =
+  final TextEditingController textEditingControllerSenha =
       new TextEditingController();
 
   @override
