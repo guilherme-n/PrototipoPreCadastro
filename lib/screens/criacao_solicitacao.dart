@@ -227,7 +227,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
               .add({
             'nomeArquivo': '$id.jgp',
             'urlArquivo': urlArquivo,
-            'dataCriacao': DateTime.now(),
+            'dataCriacao': _pedido.dataSolicitacao,
           });
 
           imagem = null;
@@ -255,6 +255,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
   }
 
   handleTakePhoto(int posicaoArrayImagens) async {
+    print('1');
     Navigator.pop(context);
     File file = await ImagePicker.pickImage(
       source: ImageSource.camera,
@@ -267,6 +268,7 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
   }
 
   handleChooseFromGallery(posicaoArrayImagens) async {
+    print('2');
     Navigator.pop(context);
     File file = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -283,11 +285,15 @@ class _CriacaoSolicitacaoState extends State<CriacaoSolicitacao> {
           children: <Widget>[
             SimpleDialogOption(
               child: Text(_kTextoImgDaCamera),
-              onPressed: handleTakePhoto(posicaoArrayImagens),
+              onPressed: (){
+                handleTakePhoto(posicaoArrayImagens);
+              }
             ),
             SimpleDialogOption(
               child: Text(_kTextoImgDaGaleria),
-              onPressed: handleChooseFromGallery(posicaoArrayImagens),
+              onPressed: (){
+                handleChooseFromGallery(posicaoArrayImagens);
+              }
             ),
             SimpleDialogOption(
               child: Text("Cancelar"),

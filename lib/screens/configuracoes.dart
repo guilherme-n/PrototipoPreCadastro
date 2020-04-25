@@ -12,8 +12,7 @@ class Configuracoes extends StatelessWidget {
           color: Colors.yellow,
           child: Text('Sair'),
           onPressed: () async{
-            AuthService auth = AuthService();
-            auth.signout();
+            AuthService().signout();
           },
         ),
       ),

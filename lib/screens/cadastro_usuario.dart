@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:prototipo1precadastro/screens/home.dart';
@@ -6,6 +7,8 @@ class CadastroUsuario extends StatelessWidget {
   static const String id = 'cadastro_usuario';
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final CollectionReference _usuariosRef =
+      Firestore.instance.collection('usuarios');
   final TextEditingController textEditingControllerEmail =
       new TextEditingController();
   final TextEditingController textEditingControllerSenha =
@@ -48,6 +51,10 @@ class CadastroUsuario extends StatelessWidget {
                     email: email, password: senha);
 
                 if (resultado.user != null) {
+                  _usuariosRef.document(resultado.user.uid).setData({
+                    'Email': email,
+                    'Nome': '',
+                  });
                   Navigator.of(context).pushReplacementNamed(Home.id);
                 } else {
                   print('Erro');
@@ -58,7 +65,6 @@ class CadastroUsuario extends StatelessWidget {
               child: Text('Voltar'),
               onPressed: () async {
                 Navigator.of(context).pop();
-
               },
             ),
           ],
